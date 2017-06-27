@@ -61,7 +61,7 @@ def update_name(name):
     return name
 ```
 
-** Cleaning Postal Codes **
+**Cleaning Postal Codes**
 
 As with the street address data, postal codes had a number of consistency and validity issues:
 
