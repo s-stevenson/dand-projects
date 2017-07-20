@@ -31,9 +31,17 @@ library(gridExtra)
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
 
-wine_quality = read.csv('wineQualityReds.csv')
-wine_quality$X <- NULL
-str(wine_quality)
+wine = read.csv('wineQualityReds.csv')
+#remove redundant X indexing
+wine$X <- NULL
+str(wine)
+
+#rename quality to rating 
+wine$rating <- wine$quality
+
+# create new factor variable classifying wines as good or mediocre based on
+# quality score
+wine$quality <- as.factor(ifelse(wine$rating <= 5, 'mediocre', 'good'))
 
 
 ```
@@ -53,22 +61,41 @@ There should be multiple code chunks and text sections; the first one below is
 just to help you get started.
 
 ```{r echo=FALSE, Univariate_Plots}
-ggplot(wine_quality, aes(quality)) +
+ggplot(wine, aes(rating)) +
   geom_histogram(binwidth = 1, fill="#993333", colour="black") + 
   scale_x_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) + 
   scale_y_continuous(breaks = seq(0, 700, 100)) +
-  xlab("median quality score") + 
-  ggtitle("Distribution of Wine Quality") + theme_grey()
+  xlab("median rating") + 
+  ggtitle("Distribution of Wine Ratings")
 
-ggplot(wine_quality, aes(alcohol)) + geom_histogram(binwidth = .5, fill="#993333", colour="black") + scale_x_continuous(breaks = seq(0, 20, .5)) + xlab("alcohol (% by volume)") + ggtitle("Distribution of Alcohol Content")
+ggplot(wine, aes(alcohol)) + 
+  geom_histogram(binwidth = .5, fill="#993333", colour="black") + 
+  scale_x_continuous(breaks = seq(0, 20, .5)) + 
+  xlab("alcohol (% by volume)") + 
+  ggtitle("Distribution of Alcohol Content")
 
-citric <- ggplot(wine_quality, aes(citric.acid)) + geom_freqpoly()
-volatile <- ggplot(wine_quality, aes(volatile.acidity)) + geom_freqpoly()
-fixed <- ggplot(wine_quality, aes(fixed.acidity)) + geom_freqpoly()
-pH <- ggplot(wine_quality, aes(pH)) + geom_freqpoly()
-grid.arrange(citric, volatile, fixed, pH, ncol = 2)
+# acidity plots
+citric <- ggplot(wine, aes(citric.acid)) + 
+  geom_freqpoly(binwidth = .02) +
+  xlab("citric acid (g/dm^3)")
+volatile <- ggplot(wine, aes(volatile.acidity)) + geom_freqpoly()
+fixed <- ggplot(wine, aes(fixed.acidity)) + geom_freqpoly()
+pH <- ggplot(wine, aes(pH)) + geom_freqpoly(binwidth = .05) +
+  scale_x_continuous(breaks = seq(0, 14, .2))
+grid.arrange(citric, volatile, fixed, pH, ncol = 2, top = 'Distributions of Acids')
 
-ggplot(wine_quality, aes(density)) + geom_freqpoly(binwidth = .001)
+ggplot(wine, aes(density)) + geom_freqpoly(binwidth = .001)
+
+ggplot(wine, aes(residual.sugar)) + geom_freqpoly()
+
+ggplot(wine, aes(chlorides)) + geom_histogram()
+
+free_so2 <- ggplot(wine, aes(free.sulfur.dioxide)) + geom_freqpoly()
+total_so2 <- ggplot(wine, aes(total.sulfur.dioxide)) + geom_freqpoly()
+sulphates <- ggplot(wine, aes(sulphates)) + geom_freqpoly()
+grid.arrange(free_so2, total_so2, sulphates)
+
+
 ```
 
 > **Tip**: Make sure that you leave a blank line between the start / end of
