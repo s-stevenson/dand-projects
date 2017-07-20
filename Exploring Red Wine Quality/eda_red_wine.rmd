@@ -1,4 +1,5 @@
-TITLE by YOUR_NAME_HERE
+# Exploring Red Wine Chemical Properties and Quality
+### Sean Stevenson
 ========================================================
 
 > **Tip**: You will see quoted sections like this throughout the template to
@@ -24,16 +25,23 @@ a margin line to help you keep track of this guideline!
 # want it to. This will clean up the flow of your report.
 
 library(ggplot2)
+library(gridExtra)
 ```
 
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
+
+wine_quality = read.csv('wineQualityReds.csv')
+wine_quality$X <- NULL
+str(wine_quality)
+
 
 ```
 
 > **Tip**: Before you create any plots, it is a good idea to provide a short
 introduction into the dataset that you are planning to explore. Replace this
 quoted text with that general information!
+
 
 # Univariate Plots Section
 
@@ -45,7 +53,22 @@ There should be multiple code chunks and text sections; the first one below is
 just to help you get started.
 
 ```{r echo=FALSE, Univariate_Plots}
+ggplot(wine_quality, aes(quality)) +
+  geom_histogram(binwidth = 1, fill="#993333", colour="black") + 
+  scale_x_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) + 
+  scale_y_continuous(breaks = seq(0, 700, 100)) +
+  xlab("median quality score") + 
+  ggtitle("Distribution of Wine Quality") + theme_grey()
 
+ggplot(wine_quality, aes(alcohol)) + geom_histogram(binwidth = .5, fill="#993333", colour="black") + scale_x_continuous(breaks = seq(0, 20, .5)) + xlab("alcohol (% by volume)") + ggtitle("Distribution of Alcohol Content")
+
+citric <- ggplot(wine_quality, aes(citric.acid)) + geom_freqpoly()
+volatile <- ggplot(wine_quality, aes(volatile.acidity)) + geom_freqpoly()
+fixed <- ggplot(wine_quality, aes(fixed.acidity)) + geom_freqpoly()
+pH <- ggplot(wine_quality, aes(pH)) + geom_freqpoly()
+grid.arrange(citric, volatile, fixed, pH, ncol = 2)
+
+ggplot(wine_quality, aes(density)) + geom_freqpoly(binwidth = .001)
 ```
 
 > **Tip**: Make sure that you leave a blank line between the start / end of
