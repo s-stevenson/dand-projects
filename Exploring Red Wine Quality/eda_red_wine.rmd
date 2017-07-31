@@ -16,6 +16,7 @@
 # want it to. This will clean up the flow of your report.
 
 WINE_COLOR = "#722F37"
+COMP_COLOR = "#2F726A"
 
 library(ggplot2)
 library(gridExtra)
@@ -76,7 +77,7 @@ to 14 (very basic); most wines are between 3-4 on the pH scale
 # Univariate Plots Section
 
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, Rating_Plot}
 ggplot(wine, aes(rating)) +
   geom_histogram(binwidth = 1, fill = WINE_COLOR, colour="black") + 
   scale_x_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) + 
@@ -93,20 +94,30 @@ Because of the relative sparsity of data outside the 5-6 range, I am going to
 create a new factor variable called 'quality' to classify each wine as either
 'good' if it has an above average rating (>= 6) or 'mediocre' if it has a 
 below average rating (<= 5). This simplification will make it easier to see any
-patterns that characterize good or bad wines.
+patterns that might characterize good or bad wines.
 
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, Alcohol_Plot}
 
 # create new factor variable 'quality', good if rating >= 6 and mediocre if not
 wine$quality <- as.factor(ifelse(wine$rating >= 6, 'good', 'mediocre'))
-summary(wine$quality)
-```
+
 
 ggplot(wine, aes(alcohol)) + 
-  geom_histogram(binwidth = .5, fill="#993333", colour="black") + 
+  geom_histogram(binwidth = .5, fill=WINE_COLOR, colour="black") + 
   scale_x_continuous(breaks = seq(0, 20, .5)) + 
   xlab("alcohol (% by volume)") + 
   ggtitle("Distribution of Alcohol Content")
+
+ggplot(wine, aes(alcohol)) + 
+  geom_freqpoly(binwidth = .5, aes(color = quality)) + 
+  scale_x_continuous(breaks = seq(0, 20, .5)) +
+  xlab("alcohol (% by volume)") + 
+  ggtitle("Distribution of Alcohol Content")
+
+summary(wine$alcohol)
+```
+
+```{r echo=FALSE, Acidity_Plots}
 
 # acidity plots
 citric <- ggplot(wine, aes(citric.acid)) + 
@@ -117,26 +128,25 @@ fixed <- ggplot(wine, aes(fixed.acidity)) + geom_freqpoly()
 pH <- ggplot(wine, aes(pH)) + geom_freqpoly(binwidth = .05) +
   scale_x_continuous(breaks = seq(0, 14, .2))
 grid.arrange(citric, volatile, fixed, pH, ncol = 2, top = 'Distributions of Acids')
+```
+
+```{r echo=FALSE, Density_Plots}
 
 ggplot(wine, aes(density)) + geom_freqpoly(binwidth = .001)
+```
 
+```{r echo=FALSE, Sugar_Plot}
 ggplot(wine, aes(residual.sugar)) + geom_freqpoly()
 
 ggplot(wine, aes(chlorides)) + geom_histogram()
+```
 
+```{r echo=FALSE, SO2_Plot}
 # so2 plots 
 free_so2 <- ggplot(wine, aes(free.sulfur.dioxide)) + geom_freqpoly()
 total_so2 <- ggplot(wine, aes(total.sulfur.dioxide)) + geom_freqpoly()
 sulphates <- ggplot(wine, aes(sulphates)) + geom_freqpoly()
 grid.arrange(free_so2, total_so2, sulphates)
-
-
-
-ggplot(wine, aes(density)) + geom_freqpoly(binwidth = .001, aes(color = quality))
-
-ggplot(wine, aes(residual.sugar)) + geom_freqpoly(aes(color = quality))
-
-ggplot(wine, aes(chlorides)) + geom_freqpoly(aes(color = quality))
 
 free_so2 <- ggplot(wine, aes(free.sulfur.dioxide)) + geom_freqpoly(aes(color = quality))
 total_so2 <- ggplot(wine, aes(total.sulfur.dioxide)) + geom_freqpoly(aes(color = quality))
@@ -155,12 +165,6 @@ grid.arrange(citric, volatile, fixed, pH, ncol = 2, top = 'Distributions of Acid
 
 ```
 
-> **Tip**: Make sure that you leave a blank line between the start / end of
-each code block and the end / start of your Markdown text so that it is
-formatted nicely in the knitted text. Note as well that text on consecutive
-lines is treated as a single space. Make sure you have a blank line between
-your paragraphs so that they too are formatted for easy readability.
-
 # Univariate Analysis
 
 > **Tip**: Now that you've completed your univariate explorations, it's time to
@@ -169,16 +173,28 @@ gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
 
+
+
 ### What is/are the main feature(s) of interest in your dataset?
 
+The primary feature of interest in the data set is the wine ratings. This is the
+feature I am interested in predicting
+
 ### What other features in the dataset do you think will help support your \
-investigation into your feature(s) of interest?
+All of the physiochemical properties will need to be investigated to see their
+relationship with wine ratings/quality.
 
 ### Did you create any new variables from existing variables in the dataset?
+
+A new factor variable 'quality' was created classifying wines as either good or
+mediocre depending on their rating.
 
 ### Of the features you investigated, were there any unusual distributions? \
 Did you perform any operations on the data to tidy, adjust, or change the form \
 of the data? If so, why did you do this?
+
+I removed the indexing variable and renamed quality to rating to use quality
+for a variable of my own.
 
 
 # Bivariate Plots Section
