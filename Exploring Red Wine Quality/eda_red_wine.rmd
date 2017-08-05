@@ -1,5 +1,5 @@
 # Exploring Red Wine Chemical Properties and Quality
-## Sean Stevenson
+Sean Stevenson
 ========================================================
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
@@ -21,9 +21,10 @@ COMP_COLOR = "#2F726A"
 library(ggplot2)
 library(gridExtra)
 ```
+## Introduction
 
 I will be examining a data set of 1599 red wines consisting of 11 physiochemical
-properties as input variables, as well as a rating for each wine 
+properties as input variables, and a rating for each wine 
 as an output variable. Rating is defined as the median
 score given by at least three different wine experts on a scale of 0 (worst) to
 10 (best).
@@ -74,16 +75,19 @@ to 14 (very basic); most wines are between 3-4 on the pH scale
 > 11. alcohol: the percent alcohol content of the wine
 > 12. rating: (score between 0 and 10)
 
-# Univariate Plots Section
+## Univariate Plots Section
 
+In this section I will examine each variable independently to get a sense of 
+how the wines are characterized overall, both by their physiochemical properties
+and rating.
 
 ```{r echo=FALSE, Rating_Plot}
 ggplot(wine, aes(rating)) +
-  geom_histogram(binwidth = 1, fill = WINE_COLOR, colour="black") + 
+  geom_histogram(binwidth = 1, fill = WINE_COLOR) + 
   scale_x_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) + 
   scale_y_continuous(breaks = seq(0, 700, 100)) +
   ggtitle("Distribution of Wine Ratings")
-
+summary(wine$rating)
 
 ```
 
@@ -94,82 +98,173 @@ Because of the relative sparsity of data outside the 5-6 range, I am going to
 create a new factor variable called 'quality' to classify each wine as either
 'good' if it has an above average rating (>= 6) or 'mediocre' if it has a 
 below average rating (<= 5). This simplification will make it easier to see any
-patterns that might characterize good or bad wines.
+patterns that might emerge which characterize good or bad wines.
 
-```{r echo=FALSE, Alcohol_Plot}
+```{r echo=TRUE, Create_Quality}
 
 # create new factor variable 'quality', good if rating >= 6 and mediocre if not
 wine$quality <- as.factor(ifelse(wine$rating >= 6, 'good', 'mediocre'))
+```
 
+With the addition of this factor variable, future plots can be broken down by
+quality to see how good and mediocre wines differ in chemical composition.
 
+```{r echo=FALSE, Alcohol_Plot}
 ggplot(wine, aes(alcohol)) + 
-  geom_histogram(binwidth = .5, fill=WINE_COLOR, colour="black") + 
+  geom_histogram(binwidth = .5, fill=WINE_COLOR) + 
   scale_x_continuous(breaks = seq(0, 20, .5)) + 
   xlab("alcohol (% by volume)") + 
   ggtitle("Distribution of Alcohol Content")
+summary(wine$alcohol)
 
 ggplot(wine, aes(alcohol)) + 
   geom_freqpoly(binwidth = .5, aes(color = quality)) + 
   scale_x_continuous(breaks = seq(0, 20, .5)) +
   xlab("alcohol (% by volume)") + 
-  ggtitle("Distribution of Alcohol Content")
+  ggtitle("Distribution of Alcohol Content by Quality")
+by(wine$alcohol, wine$quality, summary)
 
-summary(wine$alcohol)
 ```
+
+There is a striking difference in the distribution of alcohol content between
+good and mediocre quality wines. Good wines have about 1% more alcohol on 
+average and the distribution overall is much more symmetric than for mediocre
+wines.
+
+```{r echo=FALSE, Density_Plot}
+
+ggplot(wine, aes(density)) + 
+  geom_area(stat = "bin", binwidth = .0005, fill = WINE_COLOR) +
+  scale_x_continuous(breaks = seq(0, 2, .002)) + 
+  xlab("density (g/cm^3") + 
+  ggtitle("Distribution of Density")
+
+summary(wine$density)
+
+ggplot(wine, aes(density)) + 
+  geom_freqpoly(binwidth = .0005, aes(color = quality)) +
+  scale_x_continuous(breaks = seq(0, 2, .002)) + 
+  xlab("density (g/cm^3") + 
+  ggtitle("Distribution of Density by Quality")
+
+by(wine$density, wine$quality, summary)
+```
+
+The density of the wines approximates a normal distribution. Good wines have a
+slightly lower density than mediocre wines, but it remains to be seen why this
+is the case. Perhaps this can be explained by differing residual sugar content
+or salinity.
+
+```{r echo=FALSE, Sugar_Plot}
+ggplot(wine, aes(residual.sugar)) + 
+  geom_histogram(binwidth = .1, fill = WINE_COLOR) +
+  scale_x_continuous(breaks = seq(0, 20, 1)) + 
+  xlab("residual sugar (g/dm^3)") +
+  ggtitle("Distribution of Residual Sugar Content") +
+  facet_grid(~quality)
+
+by(wine$residual.sugar, wine$quality, summary)
+```
+
+Sugar content is very low with only a few wines exceeding anything above
+8 g/dm^3, and no wines come anywhere near the standard 45 g/dm^3
+of sweet wines. There appears to be little difference between good and mediocre
+wines when it comes to sugar content.
+
+``` {r echo=FALSE, Chlorides_Plot}
+ggplot(wine, aes(chlorides)) + 
+  geom_histogram(binwidth = 0.01, fill = WINE_COLOR) +
+  scale_x_continuous(breaks = seq(0, 1, 0.1)) +
+  xlab("chlorides (g/dm^3)") +
+  ggtitle("Distribution of Chlorides") +
+  facet_grid(~quality)
+
+
+by(wine$chlorides, wine$quality, summary)
+```
+
+Similar to sugar content, chloride content is quite low in most wines and there
+is little apparent difference in content between good and mediocre wines. While
+chloride content is slightly higher on average in mediocre wines than good ones,
+it remains to be seen if this is a significant difference. Visually at least, it 
+would seem sugar and salt content within these wines is well below the 
+theshold to be noticeable to human senses. 
 
 ```{r echo=FALSE, Acidity_Plots}
 
 # acidity plots
 citric <- ggplot(wine, aes(citric.acid)) + 
-  geom_freqpoly(binwidth = .02) +
+  geom_histogram(binwidth = .05, fill = WINE_COLOR) +
   xlab("citric acid (g/dm^3)")
-volatile <- ggplot(wine, aes(volatile.acidity)) + geom_freqpoly()
-fixed <- ggplot(wine, aes(fixed.acidity)) + geom_freqpoly()
-pH <- ggplot(wine, aes(pH)) + geom_freqpoly(binwidth = .05) +
+volatile <- ggplot(wine, aes(volatile.acidity)) + 
+  geom_histogram(binwidth = .05, fill = WINE_COLOR)
+fixed <- ggplot(wine, aes(fixed.acidity)) + 
+  geom_histogram(binwidth = .5, fill = WINE_COLOR)
+pH <- ggplot(wine, aes(pH)) + 
+  geom_histogram(binwidth = .05, fill = WINE_COLOR) +
   scale_x_continuous(breaks = seq(0, 14, .2))
-grid.arrange(citric, volatile, fixed, pH, ncol = 2, top = 'Distributions of Acids')
+grid.arrange(citric, volatile, fixed, pH, ncol = 2, 
+             top = 'Distribution of Acids')
+
+citric_q <- ggplot(wine, aes(citric.acid)) + 
+  geom_freqpoly(binwidth = .05, aes(color = quality)) +
+  xlab("citric acid (g/dm^3)")
+volatile_q <- ggplot(wine, aes(volatile.acidity)) + 
+  geom_freqpoly(binwidth = .05, aes(color = quality)) +
+  xlab("volatile acidity (g/dm^3)")
+fixed_q <- ggplot(wine, aes(fixed.acidity)) + 
+  geom_freqpoly(binwidth = .5, aes(color = quality)) +
+  xlab("fixed acidity (g/dm^3)")
+pH_q <- ggplot(wine, aes(pH)) + 
+  geom_freqpoly(binwidth = .05, aes(color = quality)) +
+  scale_x_continuous(breaks = seq(0, 14, .2))
+grid.arrange(citric_q, volatile_q, fixed_q, pH_q, ncol = 2, 
+             top = 'Distributions of Acids by Quality')
 ```
 
-```{r echo=FALSE, Density_Plots}
+Volatile acidity is the most promising of the acidity variables when it comes to 
+characterizing good and mediocre wines. Volatile acidity is primarily composed
+of acetic acid (vinegar). Given one of the most common wine defects is a 
+noticeable vinegar flavor, it matches my expectations that volatile acidity 
+could be a crucial variable. 
 
-ggplot(wine, aes(density)) + geom_freqpoly(binwidth = .001)
-```
-
-```{r echo=FALSE, Sugar_Plot}
-ggplot(wine, aes(residual.sugar)) + geom_freqpoly()
-
-ggplot(wine, aes(chlorides)) + geom_histogram()
-```
 
 ```{r echo=FALSE, SO2_Plot}
 # so2 plots 
-free_so2 <- ggplot(wine, aes(free.sulfur.dioxide)) + geom_freqpoly()
-total_so2 <- ggplot(wine, aes(total.sulfur.dioxide)) + geom_freqpoly()
-sulphates <- ggplot(wine, aes(sulphates)) + geom_freqpoly()
-grid.arrange(free_so2, total_so2, sulphates)
+free_so2 <- ggplot(wine, aes(free.sulfur.dioxide)) + 
+  geom_histogram(binwidth = 2, fill = WINE_COLOR) + 
+  xlab("free SO2 (mg/dm^3)")
+total_so2 <- ggplot(wine, aes(total.sulfur.dioxide)) + 
+  geom_histogram(binwidth = 5, fill = WINE_COLOR) +
+  xlab("total SO2 (mg/dm^3)")
+sulphates <- ggplot(wine, aes(sulphates)) + 
+  geom_histogram(binwidth = 0.05, fill = WINE_COLOR) +
+  xlab("sulphates (g/dm^3)")
+grid.arrange(free_so2, total_so2, sulphates, 
+             top = "Distribution of Sulphur Compounds")
 
-free_so2 <- ggplot(wine, aes(free.sulfur.dioxide)) + geom_freqpoly(aes(color = quality))
-total_so2 <- ggplot(wine, aes(total.sulfur.dioxide)) + geom_freqpoly(aes(color = quality))
-sulphates <- ggplot(wine, aes(sulphates)) + geom_freqpoly(aes(color = quality))
-grid.arrange(free_so2, total_so2, sulphates)
+free_so2 <- ggplot(wine, aes(free.sulfur.dioxide)) + 
+  geom_freqpoly(binwidth = 2, aes(color = quality)) + 
+  xlab("free SO2 (mg/dm^3)")
+total_so2 <- ggplot(wine, aes(total.sulfur.dioxide)) + 
+  geom_freqpoly(binwidth = 5, aes(color = quality)) +
+  xlab("total SO2 (mg/dm^3)")
+sulphates <- ggplot(wine, aes(sulphates)) + 
+  geom_freqpoly(binwidth = 0.05, aes(color = quality)) +
+  xlab("sulphates (g/dm^3)")
+grid.arrange(free_so2, total_so2, sulphates, 
+             top = "Distribution of Sulphur Compunds By Quality")
 
-citric <- ggplot(wine, aes(citric.acid)) + 
-  geom_freqpoly(binwidth = .02, aes(color = quality)) +
-  xlab("citric acid (g/dm^3)")
-volatile <- ggplot(wine, aes(volatile.acidity)) + geom_freqpoly(aes(color = quality))
-fixed <- ggplot(wine, aes(fixed.acidity)) + geom_freqpoly(aes(color = quality))
-pH <- ggplot(wine, aes(pH)) + geom_freqpoly(binwidth = .05, aes(color = quality)) +
-  scale_x_continuous(breaks = seq(0, 14, .2))
-grid.arrange(citric, volatile, fixed, pH, ncol = 2, top = 'Distributions of Acids')
+
 
 
 ```
 
-# Univariate Analysis
+Interestingly total SO2 is lower and sulphates are higher in good wines. I'm 
+not sure what would explain this but it might have something to do with the
+preservative properties of sulphate helping the good wines maintain their taste.
 
-> **Tip**: Now that you've completed your univariate explorations, it's time to
-reflect on and summarize what you've found. Use the questions below to help you
-gather your observations and add your own if you have other thoughts!
+# Univariate Analysis
 
 ### What is the structure of your dataset?
 
@@ -212,7 +307,7 @@ as well.
 
 ggplot(wine, aes(x = residual.sugar, y = alcohol)) + geom_point(aes(color = quality))
 
-ggplot(wine, aes(x = alcohol, y = pH)) + geom_point(aes(color = quality))
+ggplot(wine, aes(x = alcohol, y = pH)) + geom_point(aes(color = quality), alpha = .3)
 
 ```
 
