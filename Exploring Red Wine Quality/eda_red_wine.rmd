@@ -1,4 +1,5 @@
 # Exploring Red Wine Chemical Properties and Quality
+
 Sean Stevenson
 ========================================================
 
@@ -197,9 +198,11 @@ citric <- ggplot(wine, aes(citric.acid)) +
   geom_histogram(binwidth = .05, fill = WINE_COLOR) +
   xlab("citric acid (g/dm^3)")
 volatile <- ggplot(wine, aes(volatile.acidity)) + 
-  geom_histogram(binwidth = .05, fill = WINE_COLOR)
+  geom_histogram(binwidth = .05, fill = WINE_COLOR) +
+  xlab("volatile acidity (g/dm^3)")
 fixed <- ggplot(wine, aes(fixed.acidity)) + 
-  geom_histogram(binwidth = .5, fill = WINE_COLOR)
+  geom_histogram(binwidth = .5, fill = WINE_COLOR) +
+  xlab("fixed acidity (g/dm^3)")
 pH <- ggplot(wine, aes(pH)) + 
   geom_histogram(binwidth = .05, fill = WINE_COLOR) +
   scale_x_continuous(breaks = seq(0, 14, .2))
@@ -264,32 +267,34 @@ Interestingly total SO2 is lower and sulphates are higher in good wines. I'm
 not sure what would explain this but it might have something to do with the
 preservative properties of sulphate helping the good wines maintain their taste.
 
-# Univariate Analysis
+## Univariate Analysis
 
-### What is the structure of your dataset?
+### What were the features of interest in the data set?
 
-
-
-### What is/are the main feature(s) of interest in your dataset?
-
-The primary feature of interest in the data set is the wine ratings. This is the
-feature I am interested in predicting
-
-### What other features in the dataset do you think will help support your \
-All of the physiochemical properties will need to be investigated to see their
-relationship with wine ratings/quality.
-
-### Did you create any new variables from existing variables in the dataset?
-
-A new factor variable 'quality' was created classifying wines as either good or
-mediocre depending on their rating.
+The primary feature of interest in the data set is the wine ratings as I am 
+interested in understanding what makes a wine likely to be above or below 
+average. Alcohol content, density, volatile acidity and sulphate content seem 
+to be the most promising features in explaining wine quality. Because of the 
+sparsity of wine ratings outside the 5-6 range, a new factor variable 'quality'
+was created classifying wines as either good or mediocre depending on their 
+rating. This is helpful because I am less interested in predicting the precise 
+rating of a given wine, than whether a given wine is likely to be above or 
+below average.
 
 ### Of the features you investigated, were there any unusual distributions? \
-Did you perform any operations on the data to tidy, adjust, or change the form \
-of the data? If so, why did you do this?
+
+Most features approximated either a normal or long tailed distribution. The 
+exception was citric acid which had a very chaotic distribution. Because of 
+this I am not expecting citric acid to be of much use in predicting the quality 
+of a wine.
+
+### Did you perform any operations on the data to tidy, adjust, or change the 
+### form of the data? If so, why did you do this?
 
 I removed the indexing variable and renamed quality to rating to use quality
-for a variable of my own.
+for a variable of my own. The indexing was irrelevant to this analysis and I
+ changed the naming of the rating/quality variables because 'quality' is more 
+ intuitive as a factor variable and 'rating' as a numeric type.
 
 
 # Bivariate Plots Section
