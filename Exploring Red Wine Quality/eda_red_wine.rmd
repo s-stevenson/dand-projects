@@ -299,22 +299,51 @@ for a variable of my own. The indexing was irrelevant to this analysis and I
 
 # Bivariate Plots Section
 
-> **Tip**: Based on what you saw in the univariate plots, what relationships
-between variables might be interesting to look at in this section? Don't limit
-yourself to relationships between a main output feature and one of the
-supporting variables. Try to look at relationships between supporting variables
-as well.
+Before examining the relationships between the input and quality variables, I 
+would like to take a look to see what relationships might exist between input 
+variables.
 
-```{r echo=FALSE, Bivariate_Plots}
-# TODO: see how various acidic compounds and related
+```{r echo=FALSE, Alcohol_Sugar_Plot}
 
-# TODO: see how everything effects rating/quality
+ggplot(wine, aes(x = residual.sugar, y = alcohol)) + 
+  geom_jitter(color = WINE_COLOR, alpha = .3, fill = WINE_COLOR, shape = 16) + 
+  geom_smooth(method = lm, color = "black") +
+  xlab("residual sugar (g/L)") + 
+  ylab("alcohol (% by volume)") +
+  ggtitle("Alcohol and Residual Sugar")
 
-ggplot(wine, aes(x = residual.sugar, y = alcohol)) + geom_point(aes(color = quality))
-
-ggplot(wine, aes(x = alcohol, y = pH)) + geom_point(aes(color = quality), alpha = .3)
+cor.test(wine$residual.sugar, wine$alcohol)
 
 ```
+
+There does not appear to be any strong relationship between alcohol and residual 
+sugar within these wines. Given that alcohol is produced as a direct product of 
+sugar fermentation, the lack of relationship here would indicate the variance 
+in alcohol content must be a consequence of differing grape sugar content at the
+start of fermentation.
+
+In the next plot I am combining the three acidic components (citric acid, fixed 
+acidity, volatile acidity) by summing them, and plotting the total against pH.
+
+```{r echo=FALSE, Acidity_pH_Plot}
+total_acidity = wine$fixed.acidity + wine$volatile.acidity + wine$citric.acid
+
+ggplot(wine, aes(x = total_acidity, y = pH)) + 
+  geom_jitter(color = WINE_COLOR, alpha = .3, fill = WINE_COLOR, shape = 16) + 
+  geom_smooth(method = lm, color = "black") +
+  xlab("total acidity (g/L)") + 
+  ylab("pH") +
+  ggtitle("pH and Total Acidity")
+
+cor.test(total_acidity, wine$pH)
+
+```
+
+As expected the total acid content shows a clear relationship with pH. Given 
+pH is a measurement of acid content, the fact this correlation is not -1 
+indicates either there are other acids present in the wine that are not measured
+among our 11 input variables or the measuring error for the three acid 
+components is very large. 
 
 # Bivariate Analysis
 
